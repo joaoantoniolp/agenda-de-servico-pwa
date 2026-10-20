@@ -571,43 +571,52 @@
   };
   const testNotificationButton = document.querySelector("#testNotification");
 
-  testNotificationButton.addEventListener("click", async () => {
-    if (!("Notification" in window)) {
-      showToast("Este navegador não suporta notificações.");
-      return;
-    }
+  if (testNotificationButton) {
+    testNotificationButton.addEventListener("click", async () => {
+      console.log("Botão de notificação clicado!");
 
-    if (!("serviceWorker" in navigator)) {
-      showToast("Service Worker não suportado.");
-      return;
-    }
+      if (!("Notification" in window)) {
+        alert("Este navegador não suporta notificações.");
+        return;
+      }
 
-    let permission = Notification.permission;
+      if (!window.isSecureContext) {
+        alert("As notificações precisam de HTTPS ou localhost.");
+        return;
+      }
 
-    if (permission === "default") {
-      permission = await Notification.requestPermission();
-    }
+      if (!("serviceWorker" in navigator)) {
+        alert("Service Worker não suportado.");
+        return;
+      }
 
-    if (permission !== "granted") {
-      showToast("Permissão para notificações não concedida.");
-      return;
-    }
+      try {
+        let permission = Notification.permission;
 
-    try {
-      const registration = await navigator.serviceWorker.ready;
+        if (permission === "default") {
+          permission = await Notification.requestPermission();
+        }
 
-      await registration.showNotification("Agenda de Serviços", {
-        body: "Notificações habilitadas com sucesso!",
-        icon: "./icons/icon-192.png",
-        tag: "teste-agenda",
-      });
+        if (permission !== "granted") {
+          alert("Permissão para notificações não concedida.");
+          return;
+        }
 
-      showToast("Notificação de teste enviada.");
-    } catch (error) {
-      console.error(error);
-      showToast("Não foi possível exibir a notificação.");
-    }
-  });
+        const registration = await navigator.serviceWorker.ready;
+
+        await registration.showNotification("Agenda de Serviços", {
+          body: "Notificações funcionando corretamente!",
+          icon: "./icons/icon-192.png",
+          tag: "teste-agenda",
+        });
+
+        alert("Notificação enviada com sucesso!");
+      } catch (error) {
+        console.error("Erro ao enviar notificação:", error);
+        alert("Erro ao enviar notificação. Verifique o console.");
+      }
+    });
+  }
   if (
     "serviceWorker" in navigator &&
     ["https:", "http:"].includes(location.protocol)
